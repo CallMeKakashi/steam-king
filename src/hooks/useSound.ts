@@ -11,7 +11,7 @@ const FREQ = {
 export const useSound = () => {
     const audioContext = useRef<AudioContext | null>(null);
     const [isMuted, setIsMuted] = useState(() => {
-        return localStorage.getItem('steam-king-muted') === 'true';
+        return localStorage.getItem('vanguard-muted') === 'true';
     });
 
     useEffect(() => {
@@ -37,12 +37,12 @@ export const useSound = () => {
     const toggleMute = useCallback(() => {
         setIsMuted(prev => {
             const next = !prev;
-            localStorage.setItem('steam-king-muted', String(next));
+            localStorage.setItem('vanguard-muted', String(next));
             return next;
         });
     }, []);
 
-    const playTone = (freq: number, type: OscillatorType, duration: number, vol = 0.1) => {
+    const playTone = useCallback((freq: number, type: OscillatorType, duration: number, vol = 0.1) => {
         if (isMuted) return;
         const ctx = initAudio();
         const osc = ctx.createOscillator();
@@ -59,30 +59,29 @@ export const useSound = () => {
 
         osc.start();
         osc.stop(ctx.currentTime + duration);
-    };
+    }, [isMuted]);
 
     const playHover = useCallback(() => {
         // High-pitch, very short, sine wave - "Blip"
         playTone(FREQ.HOVER, 'sine', 0.05, 0.02);
-    }, [isMuted]);
+    }, [playTone]);
 
     const playClick = useCallback(() => {
         // Mechanical shutter sound - multiple conflicting tones
         if (isMuted) return;
-        const ctx = initAudio();
 
         // Low thud
         playTone(FREQ.CLICK_LOW, 'square', 0.1, 0.05);
         // High click
         setTimeout(() => playTone(FREQ.CLICK_HIGH, 'sawtooth', 0.05, 0.02), 20);
-    }, [isMuted]);
+    }, [isMuted, playTone]);
 
     const playSuccess = useCallback(() => {
         if (isMuted) return;
         // Ascending chime
         playTone(FREQ.SUCCESS_BASE, 'sine', 0.2, 0.05);
         setTimeout(() => playTone(FREQ.SUCCESS_BASE * 1.5, 'sine', 0.3, 0.05), 100);
-    }, [isMuted]);
+    }, [isMuted, playTone]);
 
     return {
         playHover,

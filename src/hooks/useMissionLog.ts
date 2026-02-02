@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const STORAGE_PREFIX = 'steam-king-notes-';
+const STORAGE_PREFIX = 'vanguard-notes-';
 
 export const useMissionLog = (appId: number | null) => {
     const [notes, setNotes] = useState('');
@@ -10,19 +10,15 @@ export const useMissionLog = (appId: number | null) => {
     // Load notes when appId changes
     useEffect(() => {
         if (!appId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setNotes('');
             setLastSaved(null);
             return;
         }
 
         const savedNotes = localStorage.getItem(`${STORAGE_PREFIX}${appId}`);
-        if (savedNotes) {
-            setNotes(savedNotes);
-            // In a real app we might store the timestamp too, 
-            // but for now we'll just indicate loaded state implicitly
-        } else {
-            setNotes('');
-        }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setNotes(savedNotes || '');
     }, [appId]);
 
     // Save notes with debounce
